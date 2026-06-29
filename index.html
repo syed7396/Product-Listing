@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopLens — Product Listing</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #f8fafc;
+      --white: #ffffff;
+      --primary: #0f172a;
+      --accent: #6366f1;
+      --accent-light: #ede9fe;
+      --success: #10b981;
+      --text: #1e293b;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --shadow: 0 4px 24px rgba(15, 23, 42, 0.07);
+      --card-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+    }
+
+    /* HEADER */
+    header {
+      background: var(--primary);
+      color: #fff;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    .brand {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .brand span {
+      color: #818cf8;
+    }
+
+    .header-search {
+      flex: 1;
+      max-width: 420px;
+      position: relative;
+    }
+
+    .header-search input {
+      width: 100%;
+      padding: 0.65rem 1rem 0.65rem 2.5rem;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      outline: none;
+      transition: background 0.2s;
+    }
+
+    .header-search input::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .header-search input:focus {
+      background: rgba(255, 255, 255, 0.18);
+    }
+
+    .header-search::before {
+      content: '🔍';
+      position: absolute;
+      left: 0.7rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.85rem;
+    }
+
+    .cart-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .cart-count {
+      background: #fff;
+      color: var(--accent);
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    /* LAYOUT */
+    .page {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: calc(100vh - 65px);
+    }
+
+    /* SIDEBAR */
+    aside {
+      background: var(--white);
+      border-right: 1px solid var(--border);
+      padding: 1.5rem;
+      position: sticky;
+      top: 65px;
+      height: calc(100vh - 65px);
+      overflow-y: auto;
+    }
+
+    .sidebar-section {
+      margin-bottom: 2rem;
+    }
+
+    .sidebar-section h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.9rem;
+    }
+
+    .filter-chip-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .filter-chip {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      cursor: pointer;
+      padding: 0.5rem 0.7rem;
+      border-radius: 8px;
+      font-size: 0.87rem;
+      transition: all 0.18s;
+    }
+
+    .filter-chip:hover {
+      background: var(--accent-light);
+    }
+
+    .filter-chip input[type=checkbox] {
+      accent-color: var(--accent);
+      width: 15px;
+      height: 15px;
+    }
+
+    .filter-chip.active {
+      background: var(--accent-light);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .price-range {
+      width: 100%;
+    }
+
+    .range-input {
+      width: 100%;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .range-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 0.4rem;
+    }
+
+    .rating-filters {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .rating-opt {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      padding: 0.3rem 0;
+      font-size: 0.85rem;
+    }
+
+    .rating-opt input {
+      accent-color: var(--accent);
+    }
+
+    .stars {
+      color: #f59e0b;
+      font-size: 0.85rem;
+    }
+
+    .clear-btn {
+      width: 100%;
+      background: none;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 0.55rem;
+      cursor: pointer;
+      font-size: 0.82rem;
+      color: var(--muted);
+      font-family: 'Inter', sans-serif;
+      transition: all 0.2s;
+    }
+
+    .clear-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* CONTENT */
+    .content {
+      padding: 1.5rem;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.2rem;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+    }
+
+    .results-info {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .results-info strong {
+      color: var(--text);
+    }
+
+    .sort-row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .sort-label {
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .sort-select {
+      padding: 0.45rem 0.8rem;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.83rem;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      cursor: pointer;
+      background: var(--white);
+    }
+
+    .sort-select:focus {
+      border-color: var(--accent);
+    }
+
+    .view-btns button {
+      background: none;
+      border: 1.5px solid var(--border);
+      padding: 0.4rem 0.6rem;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .view-btns button:first-child {
+      border-radius: 8px 0 0 8px;
+    }
+
+    .view-btns button:last-child {
+      border-radius: 0 8px 8px 0;
+      border-left: none;
+    }
+
+    .view-btns button.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    /* ACTIVE FILTERS */
+    .active-filters {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+
+    .active-tag {
+      background: var(--accent-light);
+      color: var(--accent);
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.25rem 0.7rem;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      cursor: pointer;
+    }
+
+    .active-tag:hover {
+      background: #c7d2fe;
+    }
+
+    /* PRODUCT GRID */
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1.2rem;
+    }
+
+    .products-grid.list-view {
+      grid-template-columns: 1fr;
+    }
+
+    .product-card {
+      background: var(--white);
+      border-radius: 14px;
+      border: 1.5px solid var(--border);
+      overflow: hidden;
+      transition: all 0.22s;
+      box-shadow: var(--card-shadow);
+      display: flex;
+      flex-direction: column;
+      animation: fadeUp 0.3s ease;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    .product-card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 8px 28px rgba(99, 102, 241, 0.12);
+      transform: translateY(-3px);
+    }
+
+    .list-view .product-card {
+      flex-direction: row;
+    }
+
+    .product-thumb {
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3.5rem;
+      background: var(--bg);
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .list-view .product-thumb {
+      width: 160px;
+      height: auto;
+    }
+
+    .badge-discount {
+      position: absolute;
+      top: 0.6rem;
+      left: 0.6rem;
+      background: #ef4444;
+      color: #fff;
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+    }
+
+    .badge-new {
+      position: absolute;
+      top: 0.6rem;
+      right: 0.6rem;
+      background: var(--success);
+      color: #fff;
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+    }
+
+    .product-body {
+      padding: 1rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .product-cat {
+      font-size: 0.7rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.3rem;
+    }
+
+    .product-name {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      margin-bottom: 0.4rem;
+      line-height: 1.3;
+    }
+
+    .product-rating {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-bottom: 0.7rem;
+    }
+
+    .star-filled {
+      color: #f59e0b;
+      font-size: 0.8rem;
+    }
+
+    .star-empty {
+      color: #e2e8f0;
+      font-size: 0.8rem;
+    }
+
+    .rating-num {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .reviews-num {
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .price-row {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-top: auto;
+    }
+
+    .price {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .price-old {
+      font-size: 0.82rem;
+      color: var(--muted);
+      text-decoration: line-through;
+    }
+
+    .add-cart {
+      width: 100%;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.65rem;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      margin-top: 0.8rem;
+      transition: all 0.2s;
+    }
+
+    .add-cart:hover {
+      background: #4f46e5;
+      transform: translateY(-1px);
+    }
+
+    .add-cart.added {
+      background: var(--success);
+    }
+
+    .no-results {
+      text-align: center;
+      padding: 4rem 1rem;
+      color: var(--muted);
+      grid-column: 1/-1;
+    }
+
+    .no-results .icon {
+      font-size: 3.5rem;
+      margin-bottom: 1rem;
+    }
+
+    /* TOAST */
+    #toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--primary);
+      color: #fff;
+      padding: 0.8rem 1.4rem;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s;
+      z-index: 999;
+    }
+
+    #toast.show {
+      transform: none;
+      opacity: 1;
+    }
+
+    @media(max-width:768px) {
+      .page {
+        grid-template-columns: 1fr;
+      }
+
+      aside {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="brand">Shop<span>Lens</span></div>
+    <div class="header-search">
+      <input id="search" placeholder="Search products…" oninput="render()">
+    </div>
+    <button class="cart-btn">🛒 Cart <span class="cart-count" id="cart-count">0</span></button>
+  </header>
+
+  <div class="page">
+    <!-- SIDEBAR -->
+    <aside>
+      <div class="sidebar-section">
+        <h3>Category</h3>
+        <div class="filter-chip-wrap" id="cat-filters"></div>
+      </div>
+      <div class="sidebar-section">
+        <h3>Max Price</h3>
+        <div class="price-range">
+          <input type="range" class="range-input" id="price-range" min="0" max="1500" value="1500"
+            oninput="updatePrice(this.value)">
+          <div class="range-label"><span>₹0</span><span id="price-val">₹1500</span></div>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <h3>Min Rating</h3>
+        <div class="rating-filters">
+          <label class="rating-opt"><input type="radio" name="rating" value="0" checked onchange="render()"> <span
+              class="stars">★★★★★</span> All</label>
+          <label class="rating-opt"><input type="radio" name="rating" value="4" onchange="render()"> <span
+              class="stars">★★★★</span> 4+</label>
+          <label class="rating-opt"><input type="radio" name="rating" value="3" onchange="render()"> <span
+              class="stars">★★★</span> 3+</label>
+          <label class="rating-opt"><input type="radio" name="rating" value="2" onchange="render()"> <span
+              class="stars">★★</span> 2+</label>
+        </div>
+      </div>
+      <button class="clear-btn" onclick="clearFilters()">✕ Clear All Filters</button>
+    </aside>
+
+    <!-- CONTENT -->
+    <div class="content">
+      <div class="toolbar">
+        <div class="results-info"><strong id="count">0</strong> products found</div>
+        <div class="sort-row">
+          <span class="sort-label">Sort:</span>
+          <select class="sort-select" id="sort-sel" onchange="render()">
+            <option value="default">Featured</option>
+            <option value="price-asc">Price: Low → High</option>
+            <option value="price-desc">Price: High → Low</option>
+            <option value="rating-desc">Rating: High → Low</option>
+            <option value="name-asc">Name: A → Z</option>
+          </select>
+          <div class="view-btns">
+            <button class="active" id="grid-btn" onclick="setView('grid')">⊞</button>
+            <button id="list-btn" onclick="setView('list')">☰</button>
+          </div>
+        </div>
+      </div>
+      <div class="active-filters" id="active-tags"></div>
+      <div class="products-grid" id="products-grid"></div>
+    </div>
+  </div>
+
+  <div id="toast">Added to cart!</div>
+
+  <script>
+    const PRODUCTS = [
+      { id: 1, name: 'Wireless Headphones Pro', category: 'Electronics', price: 1299, oldPrice: 1799, rating: 4.7, reviews: 342, emoji: '🎧', discount: 28, isNew: false },
+      { id: 2, name: 'Running Sneakers X3', category: 'Footwear', price: 849, oldPrice: null, rating: 4.5, reviews: 217, emoji: '👟', discount: 0, isNew: true },
+      { id: 3, name: 'Mechanical Keyboard', category: 'Electronics', price: 1099, oldPrice: 1499, rating: 4.8, reviews: 520, emoji: '⌨️', discount: 27, isNew: false },
+      { id: 4, name: 'Coffee Maker Deluxe', category: 'Appliances', price: 599, oldPrice: null, rating: 4.2, reviews: 98, emoji: '☕', discount: 0, isNew: false },
+      { id: 5, name: 'Yoga Mat Premium', category: 'Sports', price: 349, oldPrice: 499, rating: 4.6, reviews: 185, emoji: '🧘', discount: 30, isNew: false },
+      { id: 6, name: 'Smartwatch Series 5', category: 'Electronics', price: 1449, oldPrice: 1999, rating: 4.9, reviews: 811, emoji: '⌚', discount: 27, isNew: true },
+      { id: 7, name: 'Leather Wallet Slim', category: 'Accessories', price: 299, oldPrice: null, rating: 3.8, reviews: 62, emoji: '👛', discount: 0, isNew: false },
+      { id: 8, name: 'Blender Pro 2000', category: 'Appliances', price: 479, oldPrice: 699, rating: 4.4, reviews: 134, emoji: '🍹', discount: 31, isNew: false },
+      { id: 9, name: 'Hiking Boots Trail', category: 'Footwear', price: 1199, oldPrice: null, rating: 4.7, reviews: 290, emoji: '🥾', discount: 0, isNew: false },
+      { id: 10, name: 'Wireless Earbuds Max', category: 'Electronics', price: 699, oldPrice: 999, rating: 4.5, reviews: 448, emoji: '🎵', discount: 30, isNew: false },
+      { id: 11, name: 'Badminton Racket Set', category: 'Sports', price: 499, oldPrice: null, rating: 4.3, reviews: 77, emoji: '🏸', discount: 0, isNew: true },
+      { id: 12, name: 'Sunglasses UV400', category: 'Accessories', price: 399, oldPrice: 599, rating: 4.1, reviews: 55, emoji: '🕶️', discount: 33, isNew: false },
+    ];
+
+    const CATEGORIES = [...new Set(PRODUCTS.map(p => p.category))];
+    let selectedCats = new Set(CATEGORIES);
+    let maxPrice = 1500;
+    let cartCount = 0;
+    let viewMode = 'grid';
+
+    // Build category filters
+    const catWrap = document.getElementById('cat-filters');
+    CATEGORIES.forEach(cat => {
+      const label = document.createElement('label');
+      label.className = 'filter-chip active';
+      label.innerHTML = `<input type="checkbox" checked onchange="toggleCat('${cat}',this)"> ${cat}`;
+      catWrap.appendChild(label);
+    });
+
+    function toggleCat(cat, el) {
+      if (el.checked) selectedCats.add(cat); else selectedCats.delete(cat);
+      el.closest('.filter-chip').classList.toggle('active', el.checked);
+      render();
+    }
+
+    function updatePrice(v) {
+      maxPrice = parseInt(v);
+      document.getElementById('price-val').textContent = '₹' + v;
+      render();
+    }
+
+    function getMinRating() {
+      return parseFloat(document.querySelector('input[name=rating]:checked').value);
+    }
+
+    function clearFilters() {
+      selectedCats = new Set(CATEGORIES);
+      document.querySelectorAll('#cat-filters input').forEach(i => { i.checked = true; i.closest('.filter-chip').classList.add('active'); });
+      document.getElementById('price-range').value = 1500; updatePrice(1500);
+      document.querySelector('input[name=rating][value="0"]').checked = true;
+      document.getElementById('search').value = '';
+      render();
+    }
+
+    function stars(r) {
+      let s = '';
+      for (let i = 1; i <= 5; i++) s += `<span class="${i <= Math.round(r) ? 'star-filled' : 'star-empty'}">★</span>`;
+      return s;
+    }
+
+    function render() {
+      const q = document.getElementById('search').value.toLowerCase();
+      const sort = document.getElementById('sort-sel').value;
+      const minRating = getMinRating();
+
+      let filtered = PRODUCTS.filter(p =>
+        selectedCats.has(p.category) &&
+        p.price <= maxPrice &&
+        p.rating >= minRating &&
+        p.name.toLowerCase().includes(q)
+      );
+
+      if (sort === 'price-asc') filtered.sort((a, b) => a.price - b.price);
+      else if (sort === 'price-desc') filtered.sort((a, b) => b.price - a.price);
+      else if (sort === 'rating-desc') filtered.sort((a, b) => b.rating - a.rating);
+      else if (sort === 'name-asc') filtered.sort((a, b) => a.name.localeCompare(b.name));
+
+      document.getElementById('count').textContent = filtered.length;
+
+      // Active tags
+      const tags = document.getElementById('active-tags');
+      let tagHtml = '';
+      if (selectedCats.size < CATEGORIES.length) tagHtml += [...selectedCats].map(c => `<span class="active-tag" onclick="removeCat('${c}')">${c} ✕</span>`).join('');
+      if (maxPrice < 1500) tagHtml += `<span class="active-tag" onclick="updatePrice(1500);document.getElementById('price-range').value=1500">Max ₹${maxPrice} ✕</span>`;
+      if (minRating > 0) tagHtml += `<span class="active-tag">Rating ${minRating}+ ✕</span>`;
+      if (q) tagHtml += `<span class="active-tag">Search: ${q} ✕</span>`;
+      tags.innerHTML = tagHtml;
+
+      const grid = document.getElementById('products-grid');
+      if (!filtered.length) {
+        grid.innerHTML = '<div class="no-results"><div class="icon">😕</div><p>No products match your filters.<br>Try adjusting them.</p></div>';
+        return;
+      }
+      grid.innerHTML = filtered.map(p => `
+    <div class="product-card">
+      <div class="product-thumb">
+        ${p.emoji}
+        ${p.discount ? `<span class="badge-discount">-${p.discount}%</span>` : ''}
+        ${p.isNew ? `<span class="badge-new">NEW</span>` : ''}
+      </div>
+      <div class="product-body">
+        <div class="product-cat">${p.category}</div>
+        <div class="product-name">${p.name}</div>
+        <div class="product-rating">
+          <div>${stars(p.rating)}</div>
+          <span class="rating-num">${p.rating}</span>
+          <span class="reviews-num">(${p.reviews})</span>
+        </div>
+        <div class="price-row">
+          <span class="price">₹${p.price}</span>
+          ${p.oldPrice ? `<span class="price-old">₹${p.oldPrice}</span>` : ''}
+        </div>
+        <button class="add-cart" onclick="addToCart(this, '${p.name}')">Add to Cart</button>
+      </div>
+    </div>
+  `).join('');
+    }
+
+    function removeCat(cat) {
+      selectedCats.delete(cat);
+      const checks = document.querySelectorAll('#cat-filters input');
+      checks.forEach(c => { if (c.closest('label').textContent.trim() === cat) { c.checked = false; c.closest('.filter-chip').classList.remove('active'); } });
+      render();
+    }
+
+    function setView(mode) {
+      viewMode = mode;
+      const grid = document.getElementById('products-grid');
+      grid.classList.toggle('list-view', mode === 'list');
+      document.getElementById('grid-btn').classList.toggle('active', mode === 'grid');
+      document.getElementById('list-btn').classList.toggle('active', mode === 'list');
+    }
+
+    function addToCart(btn, name) {
+      btn.textContent = '✓ Added!';
+      btn.classList.add('added');
+      cartCount++;
+      document.getElementById('cart-count').textContent = cartCount;
+      const toast = document.getElementById('toast');
+      toast.textContent = `"${name}" added to cart!`;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+        btn.textContent = 'Add to Cart';
+        btn.classList.remove('added');
+      }, 2000);
+    }
+
+    render();
+  </script>
+</body>
+
+</html>
